@@ -10,7 +10,7 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-func InstallUpdateCRDs(config *rest.Config, crds ...CRD) error {
+func InstallUpdateCRDs(config *rest.Config, crds ...*CRD) error {
 	cli, err := clientset.NewForConfig(config)
 	if err != nil {
 		return err
