@@ -20,7 +20,19 @@ type CRDVersion struct {
 
 type versionCustomizer func(cv *CRDVersion)
 
-func (cv *CRDVersion) WithColumn(cols ...apiextv1.CustomResourceColumnDefinition) *CRDVersion {
+func (cv *CRDVersion) WithColumn(name string, jsonPath string) *CRDVersion {
+	col := apiextv1.CustomResourceColumnDefinition{
+		Name:     name,
+		JSONPath: jsonPath,
+		Type:     "string",
+		Priority: 0,
+	}
+
+	cv.columns = append(cv.columns, col)
+	return cv
+}
+
+func (cv *CRDVersion) WithCRDColumns(cols ...apiextv1.CustomResourceColumnDefinition) *CRDVersion {
 	cv.columns = append(cv.columns, cols...)
 	return cv
 }

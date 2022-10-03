@@ -73,6 +73,9 @@ func Test_Install(t *testing.T) {
 		cv.
 			IsServed(true).
 			IsStored(true)
+
+		cv.
+			WithColumn("baz", ".spec.baz")
 	})
 
 	cfg, err := clientcmd.BuildConfigFromFlags("", "/tmp/k3s-default")
