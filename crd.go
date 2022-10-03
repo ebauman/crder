@@ -63,6 +63,8 @@ func (c *CRD) AddVersion(version string, object HasGVK, customize versionCustomi
 	v := Version{
 		version: version,
 		object:  object,
+		served:  true,
+		stored:  true,
 	}
 
 	if customize != nil {
