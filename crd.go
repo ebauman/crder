@@ -30,7 +30,7 @@ type CRD struct {
 	categories []string
 }
 
-func NewCRD(obj HasGVK, customize func(c *CRD) *CRD) {
+func NewCRD(obj HasGVK, customize func(c *CRD)) *CRD {
 	c := &CRD{
 		object:   obj,
 		gvk:      obj.GroupVersionKind(),
@@ -40,6 +40,8 @@ func NewCRD(obj HasGVK, customize func(c *CRD) *CRD) {
 	if customize != nil {
 		customize(c)
 	}
+
+	return c
 }
 
 // WithPreserveUnknown sets preserveUnknown to true
