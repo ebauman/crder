@@ -2,7 +2,7 @@ package crder
 
 import apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 
-type CRDConversion struct {
+type Conversion struct {
 	Webhook  bool
 	Service  apiextv1.ServiceReference
 	CABundle string
@@ -10,39 +10,39 @@ type CRDConversion struct {
 	Versions []string
 }
 
-type conversionCustomizer func(cc *CRDConversion)
+type conversionCustomizer func(cc *Conversion)
 
-func (cc *CRDConversion) StrategyNone() *CRDConversion {
+func (cc *Conversion) StrategyNone() *Conversion {
 	cc.Webhook = false
 
 	return cc
 }
 
-func (cc *CRDConversion) StrategyWebhook() *CRDConversion {
+func (cc *Conversion) StrategyWebhook() *Conversion {
 	cc.Webhook = true
 
 	return cc
 }
 
-func (cc *CRDConversion) WithCABundle(bundle string) *CRDConversion {
+func (cc *Conversion) WithCABundle(bundle string) *Conversion {
 	cc.CABundle = bundle
 
 	return cc
 }
 
-func (cc *CRDConversion) WithService(service apiextv1.ServiceReference) *CRDConversion {
+func (cc *Conversion) WithService(service apiextv1.ServiceReference) *Conversion {
 	cc.Service = service
 
 	return cc
 }
 
-func (cc *CRDConversion) WithURL(url string) *CRDConversion {
+func (cc *Conversion) WithURL(url string) *Conversion {
 	cc.URL = url
 
 	return cc
 }
 
-func (cc *CRDConversion) WithVersions(versions ...string) *CRDConversion {
+func (cc *Conversion) WithVersions(versions ...string) *Conversion {
 	cc.Versions = versions
 
 	return cc

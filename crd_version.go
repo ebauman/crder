@@ -5,7 +5,7 @@ import (
 	"k8s.io/utils/pointer"
 )
 
-type CRDVersion struct {
+type Version struct {
 	columns            []apiextv1.CustomResourceColumnDefinition
 	served             bool
 	stored             bool
@@ -18,9 +18,9 @@ type CRDVersion struct {
 	status             bool
 }
 
-type versionCustomizer func(cv *CRDVersion)
+type versionCustomizer func(cv *Version)
 
-func (cv *CRDVersion) WithColumn(name string, jsonPath string) *CRDVersion {
+func (cv *Version) WithColumn(name string, jsonPath string) *Version {
 	col := apiextv1.CustomResourceColumnDefinition{
 		Name:     name,
 		JSONPath: jsonPath,
@@ -32,36 +32,36 @@ func (cv *CRDVersion) WithColumn(name string, jsonPath string) *CRDVersion {
 	return cv
 }
 
-func (cv *CRDVersion) WithCRDColumns(cols ...apiextv1.CustomResourceColumnDefinition) *CRDVersion {
+func (cv *Version) WithCRDColumns(cols ...apiextv1.CustomResourceColumnDefinition) *Version {
 	cv.columns = append(cv.columns, cols...)
 	return cv
 }
 
-func (cv *CRDVersion) IsServed(served bool) *CRDVersion {
+func (cv *Version) IsServed(served bool) *Version {
 	cv.served = served
 	return cv
 }
 
-func (cv *CRDVersion) IsStored(stored bool) *CRDVersion {
+func (cv *Version) IsStored(stored bool) *Version {
 	cv.stored = stored
 
 	return cv
 }
 
-func (cv *CRDVersion) IsDeprecated(deprecationWarning string) *CRDVersion {
+func (cv *Version) IsDeprecated(deprecationWarning string) *Version {
 	cv.deprecated = true
 	cv.deprecationMessage = deprecationWarning
 
 	return cv
 }
 
-func (cv *CRDVersion) WithObject(obj HasGVK) *CRDVersion {
+func (cv *Version) WithObject(obj HasGVK) *Version {
 	cv.object = obj
 
 	return cv
 }
 
-func (cv *CRDVersion) WithScale(labelSelectorPath string, specReplicasPath string, statusReplicaPath string) *CRDVersion {
+func (cv *Version) WithScale(labelSelectorPath string, specReplicasPath string, statusReplicaPath string) *Version {
 	cv.scale = &apiextv1.CustomResourceSubresourceScale{
 		SpecReplicasPath:   specReplicasPath,
 		StatusReplicasPath: statusReplicaPath,
@@ -71,7 +71,7 @@ func (cv *CRDVersion) WithScale(labelSelectorPath string, specReplicasPath strin
 	return cv
 }
 
-func (cv *CRDVersion) WithStatus() *CRDVersion {
+func (cv *Version) WithStatus() *Version {
 	cv.status = true
 	return cv
 }

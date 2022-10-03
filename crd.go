@@ -12,14 +12,14 @@ type CRD struct {
 	// default false
 	preserveUnknown bool
 
-	versions []CRDVersion
+	versions []Version
 
 	// determined by object used when creating CRD
 	gvk schema.GroupVersionKind
 
-	object any
+	object HasGVK
 
-	conversion *CRDConversion
+	conversion *Conversion
 
 	namespaced bool
 
@@ -34,7 +34,7 @@ func NewCRD(obj HasGVK, customize func(c *CRD)) *CRD {
 	c := &CRD{
 		object:   obj,
 		gvk:      obj.GroupVersionKind(),
-		versions: []CRDVersion{},
+		versions: []Version{},
 	}
 
 	if customize != nil {
@@ -60,7 +60,7 @@ func (c *CRD) OverrideGVK(group string, version string, kind string) *CRD {
 }
 
 func (c *CRD) AddVersion(version string, object HasGVK, customize versionCustomizer) *CRD {
-	v := CRDVersion{
+	v := Version{
 		version: version,
 		object:  object,
 	}
@@ -75,7 +75,7 @@ func (c *CRD) AddVersion(version string, object HasGVK, customize versionCustomi
 }
 
 func (c *CRD) WithConversion(customizer conversionCustomizer) *CRD {
-	conv := &CRDConversion{}
+	conv := &Conversion{}
 
 	customizer(conv)
 

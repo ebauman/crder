@@ -49,7 +49,7 @@ func (f *Foo2) GroupVersionKind() schema.GroupVersionKind {
 func Test_CRD(t *testing.T) {
 	c := NewCRD(&Foo{}, nil)
 
-	c.AddVersion("v1", &Foo{}, func(cv *CRDVersion) {
+	c.AddVersion("v1", &Foo{}, func(cv *Version) {
 		cv.
 			IsServed(true).
 			IsStored(true)
@@ -64,13 +64,13 @@ func Test_CRD(t *testing.T) {
 func Test_Install(t *testing.T) {
 	c := NewCRD(&Foo{}, nil)
 
-	c.AddVersion("v1", &Foo{}, func(cv *CRDVersion) {
+	c.AddVersion("v1", &Foo{}, func(cv *Version) {
 		cv.
 			IsServed(true).
 			IsStored(false)
 	})
 
-	c.AddVersion("v2", &Foo2{}, func(cv *CRDVersion) {
+	c.AddVersion("v2", &Foo2{}, func(cv *Version) {
 		cv.
 			IsServed(true).
 			IsStored(true)
