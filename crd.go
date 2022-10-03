@@ -30,12 +30,18 @@ type CRD struct {
 	categories []string
 }
 
-func NewCRD(obj HasGVK) *CRD {
-	return &CRD{
+func NewCRD(obj HasGVK, customize func(c *CRD) *CRD) *CRD {
+	c := &CRD{
 		object:   obj,
 		gvk:      obj.GroupVersionKind(),
 		versions: []CRDVersion{},
 	}
+
+	if customize != nil {
+		return customize(c)
+	}
+
+	return c
 }
 
 // WithPreserveUnknown sets preserveUnknown to true
@@ -59,7 +65,9 @@ func (c *CRD) AddVersion(version string, object HasGVK, customize versionCustomi
 		object:  object,
 	}
 
-	customize(&v)
+	if customize != nil {
+		customize(&v)
+	}
 
 	c.versions = append(c.versions, v)
 

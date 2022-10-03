@@ -30,7 +30,7 @@ type Foo2Spec struct {
 	Baz bool
 }
 
-func (f Foo) GroupVersionKind() schema.GroupVersionKind {
+func (f *Foo) GroupVersionKind() schema.GroupVersionKind {
 	return schema.GroupVersionKind{
 		Group:   "example.org",
 		Version: "v1",
@@ -38,7 +38,7 @@ func (f Foo) GroupVersionKind() schema.GroupVersionKind {
 	}
 }
 
-func (f Foo2) GroupVersionKind() schema.GroupVersionKind {
+func (f *Foo2) GroupVersionKind() schema.GroupVersionKind {
 	return schema.GroupVersionKind{
 		Group:   "example.org",
 		Version: "v2",
@@ -47,8 +47,9 @@ func (f Foo2) GroupVersionKind() schema.GroupVersionKind {
 }
 
 func Test_CRD(t *testing.T) {
-	c := NewCRD(Foo{})
-	c.AddVersion("v1", Foo{}, func(cv *CRDVersion) {
+	c := NewCRD(&Foo{}, nil)
+
+	c.AddVersion("v1", &Foo{}, func(cv *CRDVersion) {
 		cv.
 			IsServed(true).
 			IsStored(true)
@@ -61,15 +62,15 @@ func Test_CRD(t *testing.T) {
 }
 
 func Test_Install(t *testing.T) {
-	c := NewCRD(Foo{})
+	c := NewCRD(&Foo{}, nil)
 
-	c.AddVersion("v1", Foo{}, func(cv *CRDVersion) {
+	c.AddVersion("v1", &Foo{}, func(cv *CRDVersion) {
 		cv.
 			IsServed(true).
 			IsStored(false)
 	})
 
-	c.AddVersion("v2", Foo2{}, func(cv *CRDVersion) {
+	c.AddVersion("v2", &Foo2{}, func(cv *CRDVersion) {
 		cv.
 			IsServed(true).
 			IsStored(true)
