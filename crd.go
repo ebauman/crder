@@ -30,8 +30,8 @@ type CRD struct {
 	categories []string
 }
 
-func NewCRD(obj HasGVK, customize func(c *CRD)) *CRD {
-	c := &CRD{
+func NewCRD(obj HasGVK, customize func(c CRD)) CRD {
+	c := CRD{
 		object:   obj,
 		gvk:      obj.GroupVersionKind(),
 		versions: []Version{},
@@ -45,11 +45,11 @@ func NewCRD(obj HasGVK, customize func(c *CRD)) *CRD {
 }
 
 // WithPreserveUnknown sets preserveUnknown to true
-func (c *CRD) WithPreserveUnknown() {
+func (c CRD) WithPreserveUnknown() {
 	c.preserveUnknown = true
 }
 
-func (c *CRD) OverrideGVK(group string, version string, kind string) *CRD {
+func (c CRD) OverrideGVK(group string, version string, kind string) CRD {
 	c.gvk = schema.GroupVersionKind{
 		Group:   group,
 		Version: version,
@@ -59,7 +59,7 @@ func (c *CRD) OverrideGVK(group string, version string, kind string) *CRD {
 	return c
 }
 
-func (c *CRD) AddVersion(version string, object HasGVK, customize versionCustomizer) *CRD {
+func (c CRD) AddVersion(version string, object HasGVK, customize versionCustomizer) CRD {
 	v := Version{
 		version: version,
 		object:  object,
@@ -76,7 +76,7 @@ func (c *CRD) AddVersion(version string, object HasGVK, customize versionCustomi
 	return c
 }
 
-func (c *CRD) WithConversion(customizer conversionCustomizer) *CRD {
+func (c CRD) WithConversion(customizer conversionCustomizer) CRD {
 	conv := &Conversion{}
 
 	customizer(conv)
@@ -86,26 +86,26 @@ func (c *CRD) WithConversion(customizer conversionCustomizer) *CRD {
 	return c
 }
 
-func (c *CRD) IsNamespaced(namespaced bool) *CRD {
+func (c CRD) IsNamespaced(namespaced bool) CRD {
 	c.namespaced = namespaced
 
 	return c
 }
 
-func (c *CRD) WithNames(singular string, plural string) *CRD {
+func (c CRD) WithNames(singular string, plural string) CRD {
 	c.singularName = singular
 	c.pluralName = plural
 
 	return c
 }
 
-func (c *CRD) WithShortNames(names ...string) *CRD {
+func (c CRD) WithShortNames(names ...string) CRD {
 	c.shortNames = names
 
 	return c
 }
 
-func (c *CRD) WithCategories(categories ...string) *CRD {
+func (c CRD) WithCategories(categories ...string) CRD {
 	c.categories = categories
 
 	return c

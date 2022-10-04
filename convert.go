@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func (c *CRD) ToV1CustomResourceDefinition() (*apiextv1.CustomResourceDefinition, error) {
+func (c CRD) ToV1CustomResourceDefinition() (*apiextv1.CustomResourceDefinition, error) {
 	var scope = apiextv1.ClusterScoped
 
 	if c.namespaced {
@@ -70,7 +70,7 @@ func (c *CRD) ToV1CustomResourceDefinition() (*apiextv1.CustomResourceDefinition
 			columns:            nil,
 			served:             true,
 			stored:             true,
-			parent:             c,
+			parent:             &c,
 			object:             c.object,
 			version:            c.gvk.Version,
 			deprecated:         false,
@@ -94,7 +94,7 @@ func (c *CRD) ToV1CustomResourceDefinition() (*apiextv1.CustomResourceDefinition
 	return &out, nil
 }
 
-func (cv *Version) ToV1CustomResourceDefinitionVersion() (*apiextv1.CustomResourceDefinitionVersion, error) {
+func (cv Version) ToV1CustomResourceDefinitionVersion() (*apiextv1.CustomResourceDefinitionVersion, error) {
 	schema, err := openapi.ToOpenAPIFromStruct(cv.object)
 	if err != nil {
 		return nil, err
