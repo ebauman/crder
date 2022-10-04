@@ -19,7 +19,7 @@ type CRD struct {
 
 	object HasGVK
 
-	conversion *Conversion
+	conversion Conversion
 
 	namespaced bool
 
@@ -68,7 +68,7 @@ func (c CRD) AddVersion(version string, object HasGVK, customize versionCustomiz
 	}
 
 	if customize != nil {
-		customize(&v)
+		customize(v)
 	}
 
 	c.versions = append(c.versions, v)
@@ -77,7 +77,7 @@ func (c CRD) AddVersion(version string, object HasGVK, customize versionCustomiz
 }
 
 func (c CRD) WithConversion(customizer conversionCustomizer) CRD {
-	conv := &Conversion{}
+	conv := Conversion{}
 
 	customizer(conv)
 
