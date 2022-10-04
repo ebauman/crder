@@ -1,6 +1,7 @@
 package crder
 
 import (
+	"errors"
 	"github.com/rancher/wrangler/pkg/schemas/openapi"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -9,6 +10,9 @@ import (
 )
 
 func (c CRD) ToV1CustomResourceDefinition() (*apiextv1.CustomResourceDefinition, error) {
+	if len(c.versions) == 0 {
+		return nil, errors.New("must define at least one version")
+	}
 	var scope = apiextv1.ClusterScoped
 
 	if c.namespaced {
@@ -62,24 +66,6 @@ func (c CRD) ToV1CustomResourceDefinition() (*apiextv1.CustomResourceDefinition,
 				return nil
 			}(),
 		}
-	}
-
-	if len(c.versions) == 0 {
-		// create a default version based on the gvk
-		cv := Version{
-			columns:            nil,
-			served:             true,
-			stored:             true,
-			parent:             &c,
-			object:             c.object,
-			version:            c.gvk.Version,
-			deprecated:         false,
-			deprecationMessage: "",
-			scale:              nil,
-			status:             false,
-		}
-
-		c.versions = []Version{cv}
 	}
 
 	for _, cv := range c.versions {

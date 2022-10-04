@@ -10,20 +10,20 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-func InstallUpdateCRDs(config *rest.Config, crds ...CRD) error {
+func InstallUpdateCRDs(config *rest.Config, crds ...*CRD) error {
 	cli, err := clientset.NewForConfig(config)
 	if err != nil {
 		return err
 	}
 
 	var convertedCrds = make([]apiextv1.CustomResourceDefinition, len(crds))
-	for _, c := range crds {
+	for i, c := range crds {
 		converted, err := c.ToV1CustomResourceDefinition()
 		if err != nil {
 			return err
 		}
 
-		convertedCrds = append(convertedCrds, *converted)
+		convertedCrds[i] = *converted
 	}
 
 	for _, c := range convertedCrds {

@@ -10,7 +10,7 @@ type Version struct {
 	served             bool
 	stored             bool
 	parent             *CRD
-	object             HasGVK
+	object             interface{}
 	version            string
 	deprecated         bool
 	deprecationMessage string
@@ -18,9 +18,9 @@ type Version struct {
 	status             bool
 }
 
-type versionCustomizer func(cv Version)
+type versionCustomizer func(cv *Version)
 
-func (cv Version) WithColumn(name string, jsonPath string) Version {
+func (cv *Version) WithColumn(name string, jsonPath string) *Version {
 	col := apiextv1.CustomResourceColumnDefinition{
 		Name:     name,
 		JSONPath: jsonPath,
@@ -32,36 +32,36 @@ func (cv Version) WithColumn(name string, jsonPath string) Version {
 	return cv
 }
 
-func (cv Version) WithCRDColumns(cols ...apiextv1.CustomResourceColumnDefinition) Version {
+func (cv *Version) WithCRDColumns(cols ...apiextv1.CustomResourceColumnDefinition) *Version {
 	cv.columns = append(cv.columns, cols...)
 	return cv
 }
 
-func (cv Version) IsServed(served bool) Version {
+func (cv *Version) IsServed(served bool) *Version {
 	cv.served = served
 	return cv
 }
 
-func (cv Version) IsStored(stored bool) Version {
+func (cv *Version) IsStored(stored bool) *Version {
 	cv.stored = stored
 
 	return cv
 }
 
-func (cv Version) IsDeprecated(deprecationWarning string) Version {
+func (cv *Version) IsDeprecated(deprecationWarning string) *Version {
 	cv.deprecated = true
 	cv.deprecationMessage = deprecationWarning
 
 	return cv
 }
 
-func (cv Version) WithObject(obj HasGVK) Version {
+func (cv *Version) WithObject(obj interface{}) *Version {
 	cv.object = obj
 
 	return cv
 }
 
-func (cv Version) WithScale(labelSelectorPath string, specReplicasPath string, statusReplicaPath string) Version {
+func (cv *Version) WithScale(labelSelectorPath string, specReplicasPath string, statusReplicaPath string) *Version {
 	cv.scale = &apiextv1.CustomResourceSubresourceScale{
 		SpecReplicasPath:   specReplicasPath,
 		StatusReplicasPath: statusReplicaPath,
@@ -71,7 +71,7 @@ func (cv Version) WithScale(labelSelectorPath string, specReplicasPath string, s
 	return cv
 }
 
-func (cv Version) WithStatus() Version {
+func (cv *Version) WithStatus() *Version {
 	cv.status = true
 	return cv
 }

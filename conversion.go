@@ -10,39 +10,39 @@ type Conversion struct {
 	Versions []string
 }
 
-type conversionCustomizer func(cc Conversion)
+type conversionCustomizer func(cc *Conversion)
 
-func (cc Conversion) StrategyNone() Conversion {
+func (cc *Conversion) StrategyNone() *Conversion {
 	cc.Webhook = false
 
 	return cc
 }
 
-func (cc Conversion) StrategyWebhook() Conversion {
+func (cc *Conversion) StrategyWebhook() *Conversion {
 	cc.Webhook = true
 
 	return cc
 }
 
-func (cc Conversion) WithCABundle(bundle string) Conversion {
+func (cc *Conversion) WithCABundle(bundle string) *Conversion {
 	cc.CABundle = bundle
 
 	return cc
 }
 
-func (cc Conversion) WithService(service apiextv1.ServiceReference) Conversion {
+func (cc *Conversion) WithService(service apiextv1.ServiceReference) *Conversion {
 	cc.Service = service
 
 	return cc
 }
 
-func (cc Conversion) WithURL(url string) Conversion {
+func (cc *Conversion) WithURL(url string) *Conversion {
 	cc.URL = url
 
 	return cc
 }
 
-func (cc Conversion) WithVersions(versions ...string) Conversion {
+func (cc *Conversion) WithVersions(versions ...string) *Conversion {
 	cc.Versions = versions
 
 	return cc

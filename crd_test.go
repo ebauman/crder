@@ -47,9 +47,9 @@ func (f *Foo2) GroupVersionKind() schema.GroupVersionKind {
 }
 
 func Test_CRD(t *testing.T) {
-	c := NewCRD(&Foo{}, nil)
+	c := NewCRD(Foo{}, "example.org", nil)
 
-	c.AddVersion("v1", &Foo{}, func(cv *Version) {
+	c.AddVersion("v1", Foo{}, func(cv *Version) {
 		cv.
 			IsServed(true).
 			IsStored(true)
@@ -62,15 +62,15 @@ func Test_CRD(t *testing.T) {
 }
 
 func Test_Install(t *testing.T) {
-	c := NewCRD(&Foo{}, nil)
+	c := NewCRD(Foo{}, "example.org", nil)
 
-	c.AddVersion("v1", &Foo{}, func(cv *Version) {
+	c.AddVersion("v1", Foo{}, func(cv *Version) {
 		cv.
 			IsServed(true).
 			IsStored(false)
 	})
 
-	c.AddVersion("v2", &Foo2{}, func(cv *Version) {
+	c.AddVersion("v2", Foo2{}, func(cv *Version) {
 		cv.
 			IsServed(true).
 			IsStored(true)
@@ -84,12 +84,7 @@ func Test_Install(t *testing.T) {
 		t.Error(err)
 	}
 
-	installable, err := c.ToV1CustomResourceDefinition()
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = InstallUpdateCRDs(cfg, *installable)
+	err = InstallUpdateCRDs(cfg, c)
 	if err != nil {
 		t.Error(err)
 	}
