@@ -3,11 +3,14 @@ package crder
 import (
 	"context"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/rest"
+	"time"
 )
 
 func InstallUpdateCRDs(config *rest.Config, crds ...CRD) error {
@@ -47,6 +50,31 @@ func InstallUpdateCRDs(config *rest.Config, crds ...CRD) error {
 			if err != nil {
 				return fmt.Errorf("error updating crd: %s", err.Error())
 			}
+		}
+
+		err = wait.Poll(500*time.Millisecond, 60*time.Second, func() (done bool, err error) {
+			crd, err := cli.ApiextensionsV1().CustomResourceDefinitions().Get(context.Background(), c.Name, metav1.GetOptions{})
+			if err != nil {
+				return false, err
+			}
+
+			for _, cond := range crd.Status.Conditions {
+				switch cond.Type {
+				case apiextv1.Established:
+					if cond.Status == apiextv1.ConditionTrue {
+						return true, err
+					}
+				case apiextv1.NamesAccepted:
+					if cond.Status == apiextv1.ConditionFalse {
+						logrus.Infof("Name conflict on %s: %v\n", c.Name, cond.Reason)
+					}
+				}
+			}
+
+			return false, nil
+		})
+		if err != nil {
+			return err
 		}
 	}
 

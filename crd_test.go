@@ -84,7 +84,7 @@ func Test_Install(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = InstallUpdateCRDs(cfg, c)
+	err = InstallUpdateCRDs(cfg, *c)
 	if err != nil {
 		t.Error(err)
 	}
