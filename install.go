@@ -3,7 +3,6 @@ package crder
 import (
 	"context"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -66,7 +65,7 @@ func InstallUpdateCRDs(config *rest.Config, crds ...CRD) error {
 					}
 				case apiextv1.NamesAccepted:
 					if cond.Status == apiextv1.ConditionFalse {
-						logrus.Infof("Name conflict on %s: %v\n", c.Name, cond.Reason)
+						return true, fmt.Errorf("name conflict on %s: %v", c.Name, cond.Reason)
 					}
 				}
 			}
@@ -74,7 +73,7 @@ func InstallUpdateCRDs(config *rest.Config, crds ...CRD) error {
 			return false, nil
 		})
 		if err != nil {
-			return err
+			return fmt.Errorf("error waiting for crd readiness: %v", err.Error())
 		}
 	}
 
