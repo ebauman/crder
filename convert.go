@@ -55,7 +55,12 @@ func (c CRD) ToV1CustomResourceDefinition() (*apiextv1.CustomResourceDefinition,
 				if c.conversion.Webhook {
 					return &apiextv1.WebhookConversion{
 						ClientConfig: &apiextv1.WebhookClientConfig{
-							URL:      pointer.String(c.conversion.URL),
+							URL: func() *string {
+								if c.conversion.URL == "" {
+									return nil
+								}
+								return pointer.String(c.conversion.URL)
+							}(),
 							Service:  &c.conversion.Service,
 							CABundle: []byte(c.conversion.CABundle),
 						},
