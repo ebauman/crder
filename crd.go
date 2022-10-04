@@ -30,7 +30,7 @@ func NewCRD(obj interface{}, group string, customize func(c *CRD)) *CRD {
 	c := &CRD{
 		object: obj,
 		gvk: schema.GroupVersionKind{
-			Kind:  reflect.TypeOf(obj).Name(),
+			Kind:  getType(obj).Name(),
 			Group: group,
 		},
 		versions: []Version{},
@@ -108,4 +108,16 @@ func (c *CRD) WithCategories(categories ...string) *CRD {
 	c.categories = categories
 
 	return c
+}
+
+func getType(obj interface{}) reflect.Type {
+	if t, ok := obj.(reflect.Type); ok {
+		return t
+	}
+
+	t := reflect.TypeOf(obj)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	return t
 }
