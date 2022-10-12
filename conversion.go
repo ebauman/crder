@@ -30,8 +30,12 @@ func (cc *Conversion) WithCABundle(bundle string) *Conversion {
 	return cc
 }
 
-func (cc *Conversion) WithService(service apiextv1.ServiceReference) *Conversion {
+func (cc *Conversion) WithService(service apiextv1.ServiceReference, path string) *Conversion {
 	cc.Service = service
+
+	if(path != ""){
+		cc.Service.Path = path
+	}
 
 	return cc
 }
