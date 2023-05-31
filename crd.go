@@ -16,6 +16,7 @@ type CRD struct {
 	object interface{}
 
 	conversion *Conversion
+	validation []*Validation
 
 	namespaced bool
 
@@ -81,6 +82,20 @@ func (c *CRD) WithConversion(customizer conversionCustomizer) *CRD {
 	customizer(conv)
 
 	c.conversion = conv
+
+	return c
+}
+
+func (c *CRD) AddValidation(name string, customizer validationCustomizer) *CRD {
+	v := &Validation{
+		name: name,
+	}
+
+	v.defaults()
+
+	customizer(v)
+
+	c.validation = append(c.validation, v)
 
 	return c
 }

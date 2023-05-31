@@ -3,58 +3,76 @@ package crder
 import (
 	"context"
 	"fmt"
+	v1 "k8s.io/api/admissionregistration/v1"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/rest"
+	client "sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
 )
 
+var (
+	scheme = runtime.NewScheme()
+)
+
+func init() {
+	_ = apiextv1.AddToScheme(scheme)
+	_ = metav1.AddMetaToScheme(scheme)
+	_ = v1.AddToScheme(scheme)
+}
+
 func InstallUpdateCRDs(config *rest.Config, crds ...CRD) error {
-	cli, err := clientset.NewForConfig(config)
+	_, e := InstallUpdateCRDsWithRecordedObjects(config, crds...)
+
+	return e
+}
+
+func InstallUpdateCRDsWithRecordedObjects(config *rest.Config, crds ...CRD) ([]client.Object, error) {
+	cli, err := client.New(config, client.Options{Scheme: scheme})
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("error building kclient: %s", err.Error())
 	}
 
-	var convertedCrds = make([]apiextv1.CustomResourceDefinition, len(crds))
-	for i, c := range crds {
+	var created = []client.Object{}
+
+	for _, c := range crds {
 		converted, err := c.ToV1CustomResourceDefinition()
 		if err != nil {
-			return err
+			return nil, fmt.Errorf("error converting CRD: %s", err.Error())
 		}
-
-		convertedCrds[i] = *converted
-	}
-
-	for _, c := range convertedCrds {
-		uc, err := cli.ApiextensionsV1().CustomResourceDefinitions().Get(context.Background(), c.Name, metav1.GetOptions{})
+		var uc = &apiextv1.CustomResourceDefinition{}
+		err = cli.Get(context.Background(), client.ObjectKey{Name: converted.Name}, uc)
 		if err != nil {
 			if !errors.IsNotFound(err) {
-				return err
+				return nil, fmt.Errorf("error getting apiextv1.CRD from k: %s", err.Error())
 			}
 
 			// not found, thus requires installation
-			_, err := cli.ApiextensionsV1().CustomResourceDefinitions().Create(context.Background(), &c, metav1.CreateOptions{})
+			err = cli.Create(context.Background(), converted)
 			if err != nil {
-				return fmt.Errorf("error installing crd: %s", err.Error())
+				return nil, fmt.Errorf("error installing crd: %s", err.Error())
 			}
+			created = append(created, converted)
 		} else {
 			// object found, update it in case new version
 			updateable := uc.DeepCopy()
-			updateable.Spec = c.Spec
+			updateable.Spec = converted.Spec
 
-			_, err = cli.ApiextensionsV1().CustomResourceDefinitions().Update(context.Background(), updateable, metav1.UpdateOptions{})
+			err = cli.Update(context.Background(), updateable)
 			if err != nil {
-				return fmt.Errorf("error updating crd: %s", err.Error())
+				return nil, fmt.Errorf("error updating crd: %s", err.Error())
 			}
+			created = append(created, updateable)
 		}
 
 		err = wait.Poll(500*time.Millisecond, 60*time.Second, func() (done bool, err error) {
-			crd, err := cli.ApiextensionsV1().CustomResourceDefinitions().Get(context.Background(), c.Name, metav1.GetOptions{})
+			var crd = &apiextv1.CustomResourceDefinition{}
+			err = cli.Get(context.Background(), client.ObjectKey{Name: converted.Name}, crd)
 			if err != nil {
-				return false, err
+				return false, fmt.Errorf("errro getting apiextv1.CRD from k: %s", err.Error())
 			}
 
 			for _, cond := range crd.Status.Conditions {
@@ -65,7 +83,7 @@ func InstallUpdateCRDs(config *rest.Config, crds ...CRD) error {
 					}
 				case apiextv1.NamesAccepted:
 					if cond.Status == apiextv1.ConditionFalse {
-						return true, fmt.Errorf("name conflict on %s: %v", c.Name, cond.Reason)
+						return true, fmt.Errorf("name conflict on %s: %v", converted.Name, cond.Reason)
 					}
 				}
 			}
@@ -73,9 +91,42 @@ func InstallUpdateCRDs(config *rest.Config, crds ...CRD) error {
 			return false, nil
 		})
 		if err != nil {
-			return fmt.Errorf("error waiting for crd readiness: %v", err.Error())
+			return nil, fmt.Errorf("error waiting for crd readiness: %v", err.Error())
+		}
+
+		// install validations
+		if len(c.validation) > 0 {
+			validations, err := c.GetValidatingWebhooks()
+			if err != nil {
+				return nil, fmt.Errorf("error getting validating webhooks: %s", err.Error())
+			}
+
+			for _, v := range *validations {
+				// check if this exists first
+				var val = &v1.ValidatingWebhookConfiguration{}
+				err = cli.Get(context.Background(), client.ObjectKey{Name: v.Name}, val)
+
+				if errors.IsNotFound(err) {
+					err = cli.Create(context.Background(), &v)
+					if err != nil {
+						return nil, fmt.Errorf("error creating validatingwebhookconfiguration: %s", err.Error())
+					}
+					created = append(created, &v)
+				} else if err != nil {
+					return nil, err
+				} else {
+					val = val.DeepCopy()
+					val.Webhooks = v.Webhooks
+
+					err = cli.Update(context.Background(), val)
+					if err != nil {
+						return nil, fmt.Errorf("error updating validatingwebhookconfiguration: %s", err.Error())
+					}
+					created = append(created, &v)
+				}
+			}
 		}
 	}
 
-	return nil
+	return created, nil
 }

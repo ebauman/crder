@@ -2,7 +2,9 @@ package crder
 
 import (
 	"errors"
+	"fmt"
 	"github.com/rancher/wrangler/pkg/schemas/openapi"
+	v12 "k8s.io/api/admissionregistration/v1"
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
@@ -114,6 +116,47 @@ func (cv Version) ToV1CustomResourceDefinitionVersion() (*apiextv1.CustomResourc
 	}
 
 	return &out, nil
+}
+
+func (c *CRD) GetValidatingWebhooks() (*[]v12.ValidatingWebhookConfiguration, error) {
+	if len(c.validation) == 0 {
+		return nil, fmt.Errorf("no validations in this crd")
+	}
+
+	vwcs := make([]v12.ValidatingWebhookConfiguration, len(c.validation))
+
+	for i, v := range c.validation {
+		out := v12.ValidatingWebhookConfiguration{
+			TypeMeta: v1.TypeMeta{},
+			ObjectMeta: v1.ObjectMeta{
+				Name: v.name,
+			},
+			Webhooks: []v12.ValidatingWebhook{
+				{
+					Name: v.name,
+					ClientConfig: v12.WebhookClientConfig{
+						URL: func() *string {
+							if v.url != "" {
+								return pointer.String(v.url)
+							}
+							return nil
+						}(),
+						Service:  &v.service,
+						CABundle: []byte(v.caBundle),
+					},
+					Rules:                   v.rules,
+					MatchPolicy:             &v.matchPolicy,
+					NamespaceSelector:       &v.namespaceSelector,
+					ObjectSelector:          &v.objectSelector,
+					AdmissionReviewVersions: v.versions,
+					SideEffects:             &v.sideEffect,
+				},
+			},
+		}
+		vwcs[i] = out
+	}
+
+	return &vwcs, nil
 }
 
 func (c *CRD) resolveNames() (singular string, plural string) {
