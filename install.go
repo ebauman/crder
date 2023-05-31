@@ -24,12 +24,15 @@ func init() {
 	_ = v1.AddToScheme(scheme)
 }
 
+// InstallUpdateCRDs used to install and update CRDs (also validatingwebhookconfigurations)
 func InstallUpdateCRDs(config *rest.Config, crds ...CRD) error {
 	_, e := InstallUpdateCRDsWithRecordedObjects(config, crds...)
 
 	return e
 }
 
+// InstallUpdateCRDsWithRecordedObjects same as InstallUpdateCRDs except this returns objects that were created or updated
+// Mostly useful for tests where the test should clean up after itself
 func InstallUpdateCRDsWithRecordedObjects(config *rest.Config, crds ...CRD) ([]client.Object, error) {
 	cli, err := client.New(config, client.Options{Scheme: scheme})
 	if err != nil {
