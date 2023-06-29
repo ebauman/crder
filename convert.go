@@ -93,6 +93,8 @@ func (cv Version) ToV1CustomResourceDefinitionVersion() (*apiextv1.CustomResourc
 		return nil, err
 	}
 
+	schema.XPreserveUnknownFields = pointer.Bool(cv.preserveUnknown)
+
 	out := apiextv1.CustomResourceDefinitionVersion{
 		Name:    cv.version,
 		Served:  cv.served,

@@ -16,6 +16,7 @@ type Version struct {
 	deprecationMessage string
 	scale              *apiextv1.CustomResourceSubresourceScale
 	status             bool
+	preserveUnknown    bool
 }
 
 type versionCustomizer func(cv *Version)
@@ -73,5 +74,10 @@ func (cv *Version) WithScale(labelSelectorPath string, specReplicasPath string, 
 
 func (cv *Version) WithStatus() *Version {
 	cv.status = true
+	return cv
+}
+
+func (cv *Version) WithPreserveUnknown() *Version {
+	cv.preserveUnknown = true
 	return cv
 }
