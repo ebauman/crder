@@ -39,9 +39,12 @@ func (c CRD) ToV1CustomResourceDefinition() (*apiextv1.CustomResourceDefinition,
 				ListKind:   "",
 				Categories: c.categories,
 			},
-			Scope:                 scope,
-			PreserveUnknownFields: c.preserveUnknown,
+			Scope: scope,
 		},
+	}
+
+	if c.preserveUnknown {
+		out.Spec.PreserveUnknownFields = true
 	}
 
 	if c.conversion != nil {
