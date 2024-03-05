@@ -7,7 +7,7 @@ import (
 
 type CRD struct {
 	// default false
-	preserveUnknown bool
+	preserveUnknown string
 
 	versions []Version
 
@@ -46,7 +46,7 @@ func NewCRD(obj interface{}, group string, customize func(c *CRD)) *CRD {
 
 // WithPreserveUnknown sets preserveUnknown to true
 func (c *CRD) WithPreserveUnknown() {
-	c.preserveUnknown = true
+	c.preserveUnknown = "true"
 }
 
 func (c *CRD) OverrideGVK(group string, version string, kind string) *CRD {
