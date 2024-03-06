@@ -39,12 +39,9 @@ func (c CRD) ToV1CustomResourceDefinition() (*apiextv1.CustomResourceDefinition,
 				ListKind:   "",
 				Categories: c.categories,
 			},
-			Scope: scope,
+			Scope:                 scope,
+			PreserveUnknownFields: c.preserveUnknown,
 		},
-	}
-
-	if c.preserveUnknown {
-		out.Spec.PreserveUnknownFields = true
 	}
 
 	if c.conversion != nil {
@@ -96,7 +93,9 @@ func (cv Version) ToV1CustomResourceDefinitionVersion() (*apiextv1.CustomResourc
 		return nil, err
 	}
 
-	schema.XPreserveUnknownFields = pointer.Bool(cv.preserveUnknown)
+	if cv.preserveUnknown {
+		schema.XPreserveUnknownFields = pointer.Bool(true)
+	}
 
 	out := apiextv1.CustomResourceDefinitionVersion{
 		Name:    cv.version,
